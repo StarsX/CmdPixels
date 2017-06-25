@@ -7,10 +7,7 @@ using namespace std;
 #define DEFAULT_TEXT_COLOR		8
 
 #define FG_RGBA16(r, g, b, a)	(((a) << 3) | ((r) << 2) | ((g) << 1) | (b))
-#define FG_RGBF(r, g, b)		FG_RGBA16((r) > 0.3333f ? 1 : 0, (g) > 0.3333f ? 1 : 0, (b) > 0.3333f ? 1 : 0, max(max(r, g), b) > 0.666f ? 1 : 0)
-
 #define BG_RGBA16(r, g, b, a)	(((a) << 7) | ((r) << 6) | ((g) << 5) | ((b) << 4))
-#define BG_RGBF(r, g, b)		BG_RGBA16((r) > 0.3333f ? 1 : 0, (g) > 0.3333f ? 1 : 0, (b) > 0.3333f ? 1 : 0, max(max(r, g), b) > 0.6666f ? 1 : 0)
 
 struct setcolor
 {
@@ -19,6 +16,22 @@ struct setcolor
 
 	setcolor(uint16_t c) :
 		m_color(c) {}
+	setcolor(float r, float g, float b)
+	{
+		const auto M = max(max(r, g), b);
+		const auto m = min(min(r, g), b);
+		const auto C = M - m;
+		const auto V = M;
+		const auto S = V > 0.0f ? C / V : 0.0f;
+
+		const auto t = S >= 0.6f ? 0.3333f : 0.5f;
+		const auto R = r >= t ? 1ui8 : 0ui8;
+		const auto G = g >= t ? 1ui8 : 0ui8;
+		const auto B = b >= t ? 1ui8 : 0ui8;
+		const auto A = V >= 0.6667f ? 1ui8 : 0ui8;
+
+		m_color = FG_RGBA16(R, G, B, A) | BG_RGBA16(R, G, B, A);
+	}
 };
 
 HANDLE setcolor::m_console_handle = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -32,7 +45,7 @@ basic_ostream<char> &operator<<(basic_ostream<char> &s, const setcolor &ref)
 
 void setNextPixel(float r, float g, float b)
 {
-	cout << setcolor(FG_RGBF(r, g, b) | BG_RGBF(r, g, b)) << "  ";
+	cout << setcolor(r, g, b) << "  ";
 }
 
 void setFontSize(int FontSize)
