@@ -21,14 +21,15 @@ struct setcolor
 		const auto M = max(max(r, g), b);
 		const auto m = min(min(r, g), b);
 		const auto C = M - m;
-		const auto V = M;
+
+		const auto& V = M;
 		const auto S = V > 0.0f ? C / V : 0.0f;
 
-		const auto t = S >= 0.6f ? 0.3333f : 0.5f;
+		const auto t = (0.1f < S && S < 0.6f) ? 0.5f : 0.3333f;
 		const auto R = r >= t ? 1ui8 : 0ui8;
 		const auto G = g >= t ? 1ui8 : 0ui8;
 		const auto B = b >= t ? 1ui8 : 0ui8;
-		const auto A = V >= 0.6667f ? 1ui8 : 0ui8;
+		const auto A = V > 0.6666f ? 1ui8 : 0ui8;
 
 		m_color = FG_RGBA16(R, G, B, A) | BG_RGBA16(R, G, B, A);
 	}
