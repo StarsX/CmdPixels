@@ -1,0 +1,1 @@
+start CmdPixels LenaFull.ppm
